@@ -46,6 +46,7 @@
     lastBeatTime: 0,
     quoteIdx: 0,
     running: false,
+    moaiDisplaySize: 0,               // モアイの現在の描画サイズ(px、毎フレーム目標値へ緩やかに追従)
   };
 
   let AC = null;
@@ -205,6 +206,7 @@
     S.scheduled = 0;
     S.floats = [];
     S.quoteIdx = 0;
+    S.moaiDisplaySize = MOAI_BASE_PX;
     hideAllNoteEls();
     showScreen("play");
     resizeCanvas();
@@ -330,9 +332,12 @@
   // iOSはツールバーの出没でvisualViewportだけが変化することがあるため個別に監視
   if (window.visualViewport) window.visualViewport.addEventListener("resize", resizeCanvas);
 
-  // iOS Safari は絵文字を極端に大きいフォントサイズでcanvas描画すると
-  // グリフが出ない/欠けることがあるため、巨大モアイのサイズに上限を設ける
-  const MOAI_MAX_PX = 130;
+  // モアイはコンボが伸びるほど育つ。基準サイズ・コンボ1につきの増加量・
+  // 画面を覆い尽くさないための絶対上限(画面の短辺の92%)で制御する
+  const MOAI_BASE_PX = 130;
+  const MOAI_GROWTH_PER_COMBO = 6;
+  const moaiTargetSize = () =>
+    Math.min(MOAI_BASE_PX + S.combo * MOAI_GROWTH_PER_COMBO, Math.min(W, H) * 0.92);
 
   function frame() {
     if (S.phase !== "play") return;
@@ -387,8 +392,10 @@
     g2d.fillRect(0, 0, W, H);
 
     // 中央の巨大モアイ(拍で脈動、後半は回る)。DOM要素として重ねて描画
+    // コンボが伸びるほど育っていき、ミスすると滑らかに縮む
     const pulse = Math.max(0, 1 - (t - S.lastBeatTime) / 0.18);
-    const moaiSize = Math.min(H * 0.28, MOAI_MAX_PX) * (1 + pulse * 0.06);
+    S.moaiDisplaySize += (moaiTargetSize() - S.moaiDisplaySize) * 0.12;
+    const moaiSize = S.moaiDisplaySize * (1 + pulse * 0.06);
     const moaiRot = Math.sin(t * 0.5) * 0.08 + (beatIdx > 64 ? t * 0.15 : 0);
     moaiEl.style.display = "block";
     moaiEl.style.left = W / 2 + "px";
