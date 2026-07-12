@@ -207,6 +207,9 @@
     S.quoteIdx = 0;
     showScreen("play");
     resizeCanvas();
+    // 画面切り替え直後はレイアウトが確定していないことがあるため、
+    // 次フレーム以降にもう一度サイズを取り直す(iOS Safari対策)
+    requestAnimationFrame(() => requestAnimationFrame(resizeCanvas));
 
     try {
       const ctx = ac();
@@ -298,14 +301,34 @@
     DPR = Math.min(window.devicePixelRatio || 1, 2);
     W = canvas.clientWidth || window.innerWidth;
     H = canvas.clientHeight || window.innerHeight;
-    canvas.width = W * DPR;
-    canvas.height = H * DPR;
+    canvas.width = Math.round(W * DPR);
+    canvas.height = Math.round(H * DPR);
     g2d.setTransform(DPR, 0, 0, DPR, 0, 0);
   }
   window.addEventListener("resize", resizeCanvas);
+  window.addEventListener("orientationchange", () => setTimeout(resizeCanvas, 150));
+  // iOSはツールバーの出没でvisualViewportだけが変化することがあるため個別に監視
+  if (window.visualViewport) window.visualViewport.addEventListener("resize", resizeCanvas);
+
+  // iOS Safari は絵文字を極端に大きいフォントサイズでcanvas描画すると
+  // グリフが出ない/欠けることがあるため、巨大モアイのサイズに上限を設ける
+  const MOAI_MAX_PX = 130;
 
   function frame() {
     if (S.phase !== "play") return;
+    try {
+      drawFrame();
+    } catch (err) {
+      g2d.fillStyle = "#0a0714";
+      g2d.fillRect(0, 0, W, H);
+      g2d.fillStyle = "#ff5f7e";
+      g2d.font = "14px sans-serif";
+      g2d.textAlign = "left";
+      g2d.fillText("エラー: " + (err && err.message || err), 16, 40);
+    }
+  }
+
+  function drawFrame() {
     const t = gameNow();
     scheduleAudio();
 
@@ -345,11 +368,12 @@
 
     // 中央の巨大モアイ(拍で脈動、後半は回る)
     const pulse = Math.max(0, 1 - (t - S.lastBeatTime) / 0.18);
+    const moaiSize = Math.min(H * 0.28, MOAI_MAX_PX) * (1 + pulse * 0.06);
     g2d.save();
     g2d.translate(W / 2, H * 0.32);
     g2d.rotate(Math.sin(t * 0.5) * 0.08 + (beatIdx > 64 ? t * 0.15 : 0));
-    g2d.globalAlpha = 0.16 + pulse * 0.1;
-    g2d.font = `${Math.round(H * 0.28 * (1 + pulse * 0.06))}px sans-serif`;
+    g2d.globalAlpha = 0.28 + pulse * 0.14;
+    g2d.font = `${Math.round(moaiSize)}px sans-serif`;
     g2d.textAlign = "center";
     g2d.textBaseline = "middle";
     g2d.fillText("🗿", 0, 0);
@@ -369,7 +393,7 @@
     g2d.arc(judgeX, laneY, 34 + pulse * 6, 0, Math.PI * 2);
     g2d.stroke();
 
-    // ノーツ
+    // ノーツ(絵文字も過度に大きいと描画されない端末があるため40pxに固定)
     g2d.textAlign = "center";
     g2d.textBaseline = "middle";
     for (const n of S.notes) {
