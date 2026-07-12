@@ -321,26 +321,43 @@
     moaiEl.style.display = "none";
   }
 
-  // コンボが成功する(悟り/概念)たびに、モアイのふちから
-  // 「グッドの手」👍が生えてすぐ消えるワンショット演出。
-  // 素の👍は黄色いフラットな絵文字でモアイの質感と浮くため、
-  // スキントーン修飾子を付けて「実際の手」らしい見た目にする
-  const HANDS = ["👍🏻", "👍🏼", "👍🏽", "👍🏾", "👍🏿"];
+  // コンボが成功する(悟り/概念)たびに、モアイの顔の右側から
+  // 「グッドの手」が生えてすぐ消えるワンショット演出。
+  // 絵文字だと質感がモアイと揃わないため、同系統の石の色調で
+  // 自前のSVGとして描く(親指を立てた拳、手首側はモアイに接続)
+  const STONE_HAND_SVG = `
+    <svg viewBox="0 0 100 100" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+      <rect x="-10" y="38" width="30" height="34" rx="10" fill="#7d7264"/>
+      <rect x="14" y="30" width="52" height="48" rx="20" fill="#9c9186" stroke="#4a4239" stroke-width="3"/>
+      <rect x="20" y="34" width="24" height="16" rx="8" fill="#c4bbae" opacity="0.55"/>
+      <line x1="30" y1="32" x2="30" y2="44" stroke="#4a4239" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>
+      <line x1="42" y1="30" x2="42" y2="42" stroke="#4a4239" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>
+      <line x1="54" y1="30" x2="54" y2="42" stroke="#4a4239" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>
+      <g transform="translate(56,42) rotate(-18)">
+        <rect x="-12" y="-34" width="24" height="52" rx="12" fill="#9c9186" stroke="#4a4239" stroke-width="3"/>
+        <rect x="-6" y="-30" width="10" height="20" rx="5" fill="#c4bbae" opacity="0.5"/>
+      </g>
+    </svg>`;
   const MAX_LIVE_HANDS = 20;   // 極端な連打での要素数暴走を防ぐ安全弁
   let liveHandCount = 0;
   function spawnGoodHand() {
     if (liveHandCount >= MAX_LIVE_HANDS) return;
     const p = S.moaiPos;
     if (!p) return;
-    const angle = Math.random() * Math.PI * 2;
-    const r = p.size * 0.42;
+    // モアイの回転に追従させ、常に「顔の右側」から生えているように見せる
+    const rotDeg = p.rot * (180 / Math.PI);
+    const r = p.size * 0.46;
+    const x = p.x + Math.cos(p.rot) * r;
+    const y = p.y + Math.sin(p.rot) * r;
+    const size = Math.max(26, Math.min(64, p.size * 0.26));
     const el = document.createElement("div");
     el.className = "hand-el";
-    el.textContent = HANDS[Math.floor(Math.random() * HANDS.length)];
-    el.style.left = p.x + Math.cos(angle) * r + "px";
-    el.style.top = p.y + Math.sin(angle) * r + "px";
-    el.style.fontSize = Math.max(22, Math.min(56, p.size * 0.22)) + "px";
-    el.style.setProperty("--hand-rot", (Math.random() * 40 - 20) + "deg");
+    el.innerHTML = STONE_HAND_SVG;
+    el.style.left = x + "px";
+    el.style.top = y + "px";
+    el.style.width = size + "px";
+    el.style.height = size + "px";
+    el.style.setProperty("--hand-rot", rotDeg + "deg");
     fxLayer.appendChild(el);
     liveHandCount++;
     el.addEventListener("animationend", () => { el.remove(); liveHandCount--; }, { once: true });
@@ -428,7 +445,8 @@
     S.moaiDisplaySize += (moaiTargetSize() - S.moaiDisplaySize) * 0.12;
     const moaiSize = S.moaiDisplaySize * (1 + pulse * 0.06);
     const moaiRot = Math.sin(t * 0.5) * 0.08 + (beatIdx > 64 ? t * 0.15 : 0);
-    S.moaiPos = { x: W / 2, y: H * 0.32, size: moaiSize };   // グッドの手のスポーン位置に使う
+    // グッドの手のスポーン位置・回転に使う(モアイの回転に追従させる)
+    S.moaiPos = { x: W / 2, y: H * 0.32, size: moaiSize, rot: moaiRot };
     moaiEl.style.display = "block";
     moaiEl.style.left = W / 2 + "px";
     moaiEl.style.top = H * 0.32 + "px";

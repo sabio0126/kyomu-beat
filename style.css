@@ -125,15 +125,15 @@ h1 {
 .moai-el { font-size: 100px; }
 .note-el { font-size: 40px; }
 
-/* コンボ成功時にモアイのふちから生えて消える「グッドの手」 */
+/* コンボ成功時にモアイの顔の右側から生えて消える「グッドの手」(自前のSVG) */
 .hand-el {
   position: absolute;
   left: 0;
   top: 0;
-  line-height: 1;
-  font-size: 34px;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.35));
   animation: handPop 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
+.hand-el svg { display: block; width: 100%; height: 100%; }
 @keyframes handPop {
   0%   { transform: translate(-50%, -50%) scale(0) rotate(calc(var(--hand-rot, 0deg) * 2)); opacity: 0; }
   35%  { transform: translate(-50%, -50%) scale(1.2) rotate(var(--hand-rot, 0deg)); opacity: 1; }
