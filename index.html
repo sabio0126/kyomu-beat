@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0a0714">
 <title>虚無ビート</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
 
@@ -25,6 +25,11 @@
 <!-- プレイ画面 -->
 <section id="screen-play" class="screen">
   <canvas id="game-canvas"></canvas>
+  <!-- 絵文字はcanvasのfillTextだと機種によってグリフが出ないことがあるため
+       DOM要素で重ねて描画する(HTMLの絵文字表示はどのブラウザでも確実) -->
+  <div id="fx-layer" class="fx-layer">
+    <div id="moai-el" class="moai-el">🗿</div>
+  </div>
   <div class="hud">
     <span id="hud-score">0</span>
     <span id="hud-combo"></span>
@@ -45,6 +50,6 @@
   </div>
 </section>
 
-<script src="game.js"></script>
+<script src="game.js?v=3"></script>
 </body>
 </html>

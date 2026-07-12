@@ -205,6 +205,7 @@
     S.scheduled = 0;
     S.floats = [];
     S.quoteIdx = 0;
+    hideAllNoteEls();
     showScreen("play");
     resizeCanvas();
     // 画面切り替え直後はレイアウトが確定していないことがあるため、
@@ -225,6 +226,7 @@
   function endGame() {
     S.running = false;
     S.phase = "result";
+    hideAllNoteEls();
     const total = S.notes.length;
     const rate = S.score / (total * 300);
     const rank =
@@ -297,6 +299,24 @@
   const g2d = canvas.getContext("2d");
   let W = 0, H = 0, DPR = 1;
 
+  // 絵文字はDOM要素で重ねて描画する(一部端末でcanvasのfillTextが
+  // 絵文字グリフだけ描画に失敗する不具合の回避策。漢字/記号はcanvasのまま)
+  const fxLayer = $("fx-layer");
+  const moaiEl = $("moai-el");
+  const NOTE_POOL_SIZE = 24;
+  const notePool = [];
+  for (let i = 0; i < NOTE_POOL_SIZE; i++) {
+    const el = document.createElement("div");
+    el.className = "note-el";
+    el.style.display = "none";
+    fxLayer.appendChild(el);
+    notePool.push(el);
+  }
+  function hideAllNoteEls() {
+    notePool.forEach((el) => { el.style.display = "none"; });
+    moaiEl.style.display = "none";
+  }
+
   function resizeCanvas() {
     DPR = Math.min(window.devicePixelRatio || 1, 2);
     W = canvas.clientWidth || window.innerWidth;
@@ -366,18 +386,16 @@
     g2d.fillStyle = grad;
     g2d.fillRect(0, 0, W, H);
 
-    // 中央の巨大モアイ(拍で脈動、後半は回る)
+    // 中央の巨大モアイ(拍で脈動、後半は回る)。DOM要素として重ねて描画
     const pulse = Math.max(0, 1 - (t - S.lastBeatTime) / 0.18);
     const moaiSize = Math.min(H * 0.28, MOAI_MAX_PX) * (1 + pulse * 0.06);
-    g2d.save();
-    g2d.translate(W / 2, H * 0.32);
-    g2d.rotate(Math.sin(t * 0.5) * 0.08 + (beatIdx > 64 ? t * 0.15 : 0));
-    g2d.globalAlpha = 0.28 + pulse * 0.14;
-    g2d.font = `${Math.round(moaiSize)}px sans-serif`;
-    g2d.textAlign = "center";
-    g2d.textBaseline = "middle";
-    g2d.fillText("🗿", 0, 0);
-    g2d.restore();
+    const moaiRot = Math.sin(t * 0.5) * 0.08 + (beatIdx > 64 ? t * 0.15 : 0);
+    moaiEl.style.display = "block";
+    moaiEl.style.left = W / 2 + "px";
+    moaiEl.style.top = H * 0.32 + "px";
+    moaiEl.style.fontSize = Math.round(moaiSize) + "px";
+    moaiEl.style.opacity = (0.28 + pulse * 0.14).toFixed(2);
+    moaiEl.style.transform = `translate(-50%, -50%) rotate(${moaiRot}rad)`;
 
     // レーンと判定円
     const laneY = H * 0.62;
@@ -393,19 +411,23 @@
     g2d.arc(judgeX, laneY, 34 + pulse * 6, 0, Math.PI * 2);
     g2d.stroke();
 
-    // ノーツ(絵文字も過度に大きいと描画されない端末があるため40pxに固定)
-    g2d.textAlign = "center";
-    g2d.textBaseline = "middle";
+    // ノーツ(DOM要素のプールを使い回して表示位置だけ更新する)
+    let poolIdx = 0;
     for (const n of S.notes) {
       const dt = n.time - t;
       if (dt > LEAD_TIME || (n.judged && n.result !== "miss" && dt < -0.05)) continue;
       if (dt < -0.4) continue;
+      if (poolIdx >= notePool.length) break;   // プール上限(通常は届かない)
+      const el = notePool[poolIdx++];
       const x = judgeX + dt * speed;
       const wob = Math.sin((t + n.time) * 6) * 5;   // ふわふわ漂う
-      g2d.font = "40px sans-serif";
-      g2d.globalAlpha = n.judged && n.result !== "miss" ? 0.15 : 1;
-      g2d.fillText(n.emoji, x, laneY + wob);
-      g2d.globalAlpha = 1;
+      el.textContent = n.emoji;
+      el.style.display = "block";
+      el.style.opacity = n.judged && n.result !== "miss" ? "0.15" : "1";
+      el.style.transform = `translate(${x}px, ${laneY + wob}px) translate(-50%, -50%)`;
+    }
+    for (; poolIdx < notePool.length; poolIdx++) {
+      notePool[poolIdx].style.display = "none";
     }
 
     // 判定テキスト

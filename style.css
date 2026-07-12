@@ -108,6 +108,23 @@ h1 {
 /* ---- プレイ画面 ---- */
 #game-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 
+/* 絵文字オーバーレイ(canvasのfillTextで絵文字が出ない機種への対策) */
+.fx-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.moai-el, .note-el {
+  position: absolute;
+  left: 0;
+  top: 0;
+  line-height: 1;
+  will-change: transform, opacity;
+}
+.moai-el { font-size: 100px; }
+.note-el { font-size: 40px; }
+
 .hud {
   position: absolute;
   top: calc(14px + var(--sat));
