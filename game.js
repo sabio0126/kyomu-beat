@@ -332,12 +332,16 @@
   // iOSはツールバーの出没でvisualViewportだけが変化することがあるため個別に監視
   if (window.visualViewport) window.visualViewport.addEventListener("resize", resizeCanvas);
 
-  // モアイはコンボが伸びるほど育つ。基準サイズ・コンボ1につきの増加量・
-  // 画面を覆い尽くさないための絶対上限(画面の短辺の92%)で制御する
+  // モアイはコンボが伸びるほど育つ。「現在のコンボ ÷ 曲の総ノーツ数」を
+  // 成長率とし、ノーミスで完走(フルコンボ)すると画面の対角線を覆う
+  // サイズまで到達する(=最終的に画面いっぱいになる)
   const MOAI_BASE_PX = 130;
-  const MOAI_GROWTH_PER_COMBO = 6;
-  const moaiTargetSize = () =>
-    Math.min(MOAI_BASE_PX + S.combo * MOAI_GROWTH_PER_COMBO, Math.min(W, H) * 0.92);
+  const moaiTargetSize = () => {
+    const fullScreenPx = Math.sqrt(W * W + H * H) * 1.05;   // 回転しても四隅まで覆う余裕
+    const total = Math.max(S.notes.length, 1);
+    const growthRatio = Math.min(S.combo / total, 1);
+    return MOAI_BASE_PX + growthRatio * (fullScreenPx - MOAI_BASE_PX);
+  };
 
   function frame() {
     if (S.phase !== "play") return;
