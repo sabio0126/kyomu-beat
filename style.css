@@ -125,6 +125,22 @@ h1 {
 .moai-el { font-size: 100px; }
 .note-el { font-size: 40px; }
 
+/* コンボ成功時にモアイのふちから生えて消える「グッドの手」 */
+.hand-el {
+  position: absolute;
+  left: 0;
+  top: 0;
+  line-height: 1;
+  font-size: 34px;
+  animation: handPop 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes handPop {
+  0%   { transform: translate(-50%, -50%) scale(0) rotate(calc(var(--hand-rot, 0deg) * 2)); opacity: 0; }
+  35%  { transform: translate(-50%, -50%) scale(1.2) rotate(var(--hand-rot, 0deg)); opacity: 1; }
+  65%  { transform: translate(-50%, -50%) scale(1) rotate(var(--hand-rot, 0deg)); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(0.7) rotate(var(--hand-rot, 0deg)); opacity: 0; }
+}
+
 .hud {
   position: absolute;
   top: calc(14px + var(--sat));

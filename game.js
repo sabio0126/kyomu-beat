@@ -47,6 +47,7 @@
     quoteIdx: 0,
     running: false,
     moaiDisplaySize: 0,               // モアイの現在の描画サイズ(px、毎フレーム目標値へ緩やかに追従)
+    moaiPos: null,                    // モアイの現在位置とサイズ {x,y,size}(グッドの手のスポーンに使用)
   };
 
   let AC = null;
@@ -279,6 +280,7 @@
         addFloat("概念", "#7ecbff");
       }
       S.maxCombo = Math.max(S.maxCombo, S.combo);
+      spawnGoodHand();
     } else {
       S.counts.whiff++;
       S.combo = 0;
@@ -317,6 +319,28 @@
   function hideAllNoteEls() {
     notePool.forEach((el) => { el.style.display = "none"; });
     moaiEl.style.display = "none";
+  }
+
+  // コンボが成功する(悟り/概念)たびに、モアイのふちから
+  // 「グッドの手」👍が生えてすぐ消えるワンショット演出
+  const MAX_LIVE_HANDS = 20;   // 極端な連打での要素数暴走を防ぐ安全弁
+  let liveHandCount = 0;
+  function spawnGoodHand() {
+    if (liveHandCount >= MAX_LIVE_HANDS) return;
+    const p = S.moaiPos;
+    if (!p) return;
+    const angle = Math.random() * Math.PI * 2;
+    const r = p.size * 0.42;
+    const el = document.createElement("div");
+    el.className = "hand-el";
+    el.textContent = "👍";
+    el.style.left = p.x + Math.cos(angle) * r + "px";
+    el.style.top = p.y + Math.sin(angle) * r + "px";
+    el.style.fontSize = Math.max(22, Math.min(56, p.size * 0.22)) + "px";
+    el.style.setProperty("--hand-rot", (Math.random() * 40 - 20) + "deg");
+    fxLayer.appendChild(el);
+    liveHandCount++;
+    el.addEventListener("animationend", () => { el.remove(); liveHandCount--; }, { once: true });
   }
 
   function resizeCanvas() {
@@ -401,6 +425,7 @@
     S.moaiDisplaySize += (moaiTargetSize() - S.moaiDisplaySize) * 0.12;
     const moaiSize = S.moaiDisplaySize * (1 + pulse * 0.06);
     const moaiRot = Math.sin(t * 0.5) * 0.08 + (beatIdx > 64 ? t * 0.15 : 0);
+    S.moaiPos = { x: W / 2, y: H * 0.32, size: moaiSize };   // グッドの手のスポーン位置に使う
     moaiEl.style.display = "block";
     moaiEl.style.left = W / 2 + "px";
     moaiEl.style.top = H * 0.32 + "px";
