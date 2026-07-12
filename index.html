@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0714">
+<title>虚無ビート</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- タイトル画面 -->
+<section id="screen-title" class="screen active">
+  <div class="title-inner">
+    <div class="title-moai">🗿</div>
+    <h1>虚無ビート</h1>
+    <p class="subtitle">〜 叩け、悟れ、無になれ 〜</p>
+    <button id="btn-start" class="btn btn-primary">入 定</button>
+    <p class="howto">流れてくる<b>概念</b>が円に重なった瞬間、画面のどこかをタップせよ</p>
+  </div>
+</section>
+
+<!-- プレイ画面 -->
+<section id="screen-play" class="screen">
+  <canvas id="game-canvas"></canvas>
+  <div class="hud">
+    <span id="hud-score">0</span>
+    <span id="hud-combo"></span>
+  </div>
+  <p id="quote" class="quote"></p>
+</section>
+
+<!-- 結果画面 -->
+<section id="screen-result" class="screen">
+  <div class="title-inner">
+    <div class="title-moai" id="result-face">🗿</div>
+    <p class="rank-label">あなたの境地</p>
+    <h1 id="result-rank">無</h1>
+    <p id="result-score" class="subtitle"></p>
+    <div class="stats" id="result-stats"></div>
+    <button id="btn-retry" class="btn btn-primary">輪 廻(もう一度)</button>
+    <button id="btn-title" class="btn btn-ghost">現世に戻る</button>
+  </div>
+</section>
+
+<script src="game.js"></script>
+</body>
+</html>
