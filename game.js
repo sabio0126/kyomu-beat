@@ -322,7 +322,10 @@
   }
 
   // コンボが成功する(悟り/概念)たびに、モアイのふちから
-  // 「グッドの手」👍が生えてすぐ消えるワンショット演出
+  // 「グッドの手」👍が生えてすぐ消えるワンショット演出。
+  // 素の👍は黄色いフラットな絵文字でモアイの質感と浮くため、
+  // スキントーン修飾子を付けて「実際の手」らしい見た目にする
+  const HANDS = ["👍🏻", "👍🏼", "👍🏽", "👍🏾", "👍🏿"];
   const MAX_LIVE_HANDS = 20;   // 極端な連打での要素数暴走を防ぐ安全弁
   let liveHandCount = 0;
   function spawnGoodHand() {
@@ -333,7 +336,7 @@
     const r = p.size * 0.42;
     const el = document.createElement("div");
     el.className = "hand-el";
-    el.textContent = "👍";
+    el.textContent = HANDS[Math.floor(Math.random() * HANDS.length)];
     el.style.left = p.x + Math.cos(angle) * r + "px";
     el.style.top = p.y + Math.sin(angle) * r + "px";
     el.style.fontSize = Math.max(22, Math.min(56, p.size * 0.22)) + "px";
