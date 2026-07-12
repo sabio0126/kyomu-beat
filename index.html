@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0a0714">
 <title>虚無ビート</title>
-<link rel="stylesheet" href="style.css?v=7">
+<link rel="stylesheet" href="style.css?v=8">
 </head>
 <body>
 
@@ -28,7 +28,25 @@
   <!-- 絵文字はcanvasのfillTextだと機種によってグリフが出ないことがあるため
        DOM要素で重ねて描画する(HTMLの絵文字表示はどのブラウザでも確実) -->
   <div id="fx-layer" class="fx-layer">
-    <div id="moai-el" class="moai-el">🗿</div>
+    <!-- モアイも自前のSVG(目を別パーツにして開閉できるようにする) -->
+    <div id="moai-el" class="moai-el">
+      <svg viewBox="0 0 100 100" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22 6 H78 L86 32 L80 96 H20 L14 32 Z" fill="#c7bfb0" stroke="#8a8071" stroke-width="3"/>
+        <rect x="20" y="30" width="60" height="12" rx="3" fill="#a89e8e" stroke="#8a8071" stroke-width="2"/>
+        <rect x="27" y="40" width="17" height="7" rx="3" fill="#8a8071"/>
+        <rect x="56" y="40" width="17" height="7" rx="3" fill="#8a8071"/>
+        <g class="moai-eye" transform="translate(35.5,43.5)">
+          <ellipse rx="7.5" ry="4.2" fill="#f5f1e6"/>
+          <circle r="2.6" fill="#2b241d"/>
+        </g>
+        <g class="moai-eye" transform="translate(64.5,43.5)">
+          <ellipse rx="7.5" ry="4.2" fill="#f5f1e6"/>
+          <circle r="2.6" fill="#2b241d"/>
+        </g>
+        <path d="M44 44 L56 44 L60 78 L40 78 Z" fill="#b7ad9e" stroke="#8a8071" stroke-width="2"/>
+        <rect x="36" y="84" width="28" height="6" rx="3" fill="#8a8071"/>
+      </svg>
+    </div>
   </div>
   <div class="hud">
     <span id="hud-score">0</span>
@@ -50,6 +68,6 @@
   </div>
 </section>
 
-<script src="game.js?v=7"></script>
+<script src="game.js?v=8"></script>
 </body>
 </html>
