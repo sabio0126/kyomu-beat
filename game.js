@@ -321,22 +321,24 @@
     moaiEl.style.display = "none";
   }
 
-  // コンボが成功する(悟り/概念)たびに、モアイの顔の右側から
+  // コンボが成功する(悟り/概念)たびに、モアイの顔の左側から
   // 「グッドの手」が生えてすぐ消えるワンショット演出。
-  // 絵文字だと質感がモアイと揃わないため、同系統の石の色調で
-  // 自前のSVGとして描く(親指を立てた拳、手首側はモアイに接続)
+  // 絵文字だと質感がモアイと揃わないため、モアイに寄せた淡い石色で
+  // 自前のSVGとして描く。指の関節と親指は円の重なりで有機的な丸みを
+  // 出している(手首側=右がモアイに接続、指・親指は左へ伸びる)
   const STONE_HAND_SVG = `
     <svg viewBox="0 0 100 100" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-      <rect x="-10" y="38" width="30" height="34" rx="10" fill="#7d7264"/>
-      <rect x="14" y="30" width="52" height="48" rx="20" fill="#9c9186" stroke="#4a4239" stroke-width="3"/>
-      <rect x="20" y="34" width="24" height="16" rx="8" fill="#c4bbae" opacity="0.55"/>
-      <line x1="30" y1="32" x2="30" y2="44" stroke="#4a4239" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>
-      <line x1="42" y1="30" x2="42" y2="42" stroke="#4a4239" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>
-      <line x1="54" y1="30" x2="54" y2="42" stroke="#4a4239" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>
-      <g transform="translate(56,42) rotate(-18)">
-        <rect x="-12" y="-34" width="24" height="52" rx="12" fill="#9c9186" stroke="#4a4239" stroke-width="3"/>
-        <rect x="-6" y="-30" width="10" height="20" rx="5" fill="#c4bbae" opacity="0.5"/>
-      </g>
+      <rect x="78" y="42" width="20" height="30" rx="10" fill="#a89e8e"/>
+      <ellipse cx="58" cy="56" rx="24" ry="20" fill="#c7bfb0" stroke="#8a8071" stroke-width="2.5"/>
+      <circle cx="38" cy="42" r="8" fill="#c7bfb0" stroke="#8a8071" stroke-width="2"/>
+      <circle cx="48" cy="37" r="8.5" fill="#c7bfb0" stroke="#8a8071" stroke-width="2"/>
+      <circle cx="58" cy="36" r="8.5" fill="#c7bfb0" stroke="#8a8071" stroke-width="2"/>
+      <circle cx="68" cy="39" r="8" fill="#c7bfb0" stroke="#8a8071" stroke-width="2"/>
+      <ellipse cx="50" cy="47" rx="13" ry="8" fill="#e6dfd0" opacity="0.45"/>
+      <circle cx="42" cy="48" r="12" fill="#c7bfb0" stroke="#8a8071" stroke-width="2.5"/>
+      <circle cx="31" cy="32" r="10" fill="#c7bfb0" stroke="#8a8071" stroke-width="2.5"/>
+      <circle cx="21" cy="16" r="7.5" fill="#c7bfb0" stroke="#8a8071" stroke-width="2.5"/>
+      <ellipse cx="19" cy="13" rx="3.5" ry="5" fill="#f0ebe0" opacity="0.7"/>
     </svg>`;
   const MAX_LIVE_HANDS = 20;   // 極端な連打での要素数暴走を防ぐ安全弁
   let liveHandCount = 0;
@@ -344,11 +346,12 @@
     if (liveHandCount >= MAX_LIVE_HANDS) return;
     const p = S.moaiPos;
     if (!p) return;
-    // モアイの回転に追従させ、常に「顔の右側」から生えているように見せる
+    // モアイの回転に追従させ、常に「顔の反対側(左)」から生えているように見せる
+    const spawnAngle = p.rot + Math.PI;
     const rotDeg = p.rot * (180 / Math.PI);
     const r = p.size * 0.46;
-    const x = p.x + Math.cos(p.rot) * r;
-    const y = p.y + Math.sin(p.rot) * r;
+    const x = p.x + Math.cos(spawnAngle) * r;
+    const y = p.y + Math.sin(spawnAngle) * r;
     const size = Math.max(26, Math.min(64, p.size * 0.26));
     const el = document.createElement("div");
     el.className = "hand-el";
